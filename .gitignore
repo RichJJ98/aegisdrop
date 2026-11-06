@@ -1,0 +1,38 @@
+﻿# Dependências
+node_modules/
+
+# Segredos: chave mestra (AES-256-GCM) e qualquer chave/certificado.
+# data/master.key chegou a ser versionada junto com o banco que ela decifra.
+data/master.key
+*.key
+*.pem
+
+# Dados locais e persistência SQLite (inclui os arquivos -wal/-shm do modo WAL,
+# que contêm dados recentes do banco e não eram cobertos pelos padrões antigos)
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/*.db-journal
+data/*.sqlite
+data/*.sqlite-journal
+data/*.sqlite-wal
+data/*.sqlite-shm
+
+# Evidências e ficheiros multimédia enviados
+data/evidencias/*
+!data/evidencias/.gitkeep
+
+# Variáveis de ambiente e credenciais
+.env
+.env.*
+!.env.example
+
+# Logs e ficheiros de sistema
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Pastas de IDE e agentes
+.kilo/
+.vscode/

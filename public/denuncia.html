@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Canal de Denúncias — Precisa de ajuda?</title>
+<style>
+  :root {
+    --vermelho: #d92626;
+    --vermelho-escuro: #a81c1c;
+    --roxo: #5b3ea6;
+    --roxo-escuro: #402b78;
+    --cinza-fundo: #f4f3f8;
+    --cinza-texto: #2c2c34;
+    --verde: #1f8a4c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--cinza-fundo); color: var(--cinza-texto);
+    padding-bottom: 40px;
+  }
+  header {
+    background: var(--roxo); color: white; padding: 18px 20px;
+    text-align: center; position: sticky; top: 0; z-index: 10;
+  }
+  header h1 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+  header p { margin: 4px 0 0; font-size: 0.8rem; opacity: 0.85; }
+
+  .panico-container { padding: 16px 20px 0; }
+  .btn-panico {
+    display: block; width: 100%; background: var(--vermelho); color: white;
+    border: none; border-radius: 14px; padding: 18px; font-size: 1.05rem;
+    font-weight: 700; text-align: center; text-decoration: none;
+    box-shadow: 0 4px 14px rgba(217,38,38,0.35); cursor: pointer;
+  }
+  .btn-panico:active { background: var(--vermelho-escuro); }
+  .panico-sub { font-size: 0.75rem; text-align: center; color: #666; margin: 8px 0 0; }
+
+  main { padding: 20px; max-width: 480px; margin: 0 auto; }
+  .card {
+    background: white; border-radius: 16px; padding: 18px; margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  label { display: block; font-size: 0.85rem; font-weight: 600; margin: 12px 0 6px; }
+  label:first-child { margin-top: 0; }
+  select, textarea, input[type="text"] {
+    width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d8d6e3;
+    font-size: 0.95rem; font-family: inherit; background: #fbfaff;
+  }
+  textarea { min-height: 100px; resize: vertical; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .chip {
+    padding: 10px 14px; border-radius: 999px; border: 1.5px solid #d8d6e3;
+    background: white; font-size: 0.85rem; cursor: pointer; user-select: none;
+  }
+  .chip.selecionado { background: var(--roxo); color: white; border-color: var(--roxo); }
+
+  .toggle-anonimo { display: flex; gap: 8px; margin-top: 6px; }
+  .toggle-anonimo .chip { flex: 1; text-align: center; }
+
+  .urgencia-row { display: flex; gap: 6px; margin-top: 6px; }
+  .urgencia-btn {
+    flex: 1; padding: 10px 4px; text-align: center; border-radius: 10px;
+    border: 1.5px solid #d8d6e3; background: white; font-size: 0.8rem; cursor: pointer;
+  }
+  .urgencia-btn.selecionado { background: var(--roxo); color: white; border-color: var(--roxo); }
+
+  input[type="file"] { margin-top: 6px; width: 100%; }
+  .preview-anexos { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .preview-anexos img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; }
+
+  .btn-enviar {
+    width: 100%; padding: 16px; border: none; border-radius: 12px;
+    background: var(--roxo); color: white; font-size: 1rem; font-weight: 700;
+    margin-top: 10px; cursor: pointer;
+  }
+  .btn-enviar:disabled { opacity: 0.6; }
+
+  .aviso-privacidade {
+    font-size: 0.75rem; color: #666; background: #eee9f9; padding: 10px 12px;
+    border-radius: 10px; margin-top: 10px; line-height: 1.4;
+  }
+
+  .resultado { display: none; text-align: center; padding: 30px 20px; }
+  .resultado.visivel { display: block; }
+  .resultado .protocolo {
+    font-size: 1.6rem; font-weight: 800; color: var(--roxo); margin: 10px 0;
+    letter-spacing: 1px;
+  }
+  .resultado .ok-icone { font-size: 3rem; }
+
+  .offline-aviso {
+    display: none; background: #fff3cd; color: #7a5c00; padding: 10px 14px;
+    border-radius: 10px; font-size: 0.8rem; margin-bottom: 12px; text-align: center;
+  }
+  .offline-aviso.visivel { display: block; }
+
+  .campo-erro { color: var(--vermelho); font-size: 0.8rem; margin-top: 4px; display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛟 Canal de Apoio e Denúncias</h1>
+  <p id="nome-evento">Carregando evento…</p>
+</header>
+
+<div class="panico-container">
+  <a href="tel:190" class="btn-panico" id="btn-panico">🚨 EMERGÊNCIA AGORA — Ligar 190</a>
+  <p class="panico-sub">Perigo imediato? Ligue já. Depois, se puder, registre os detalhes abaixo.</p>
+</div>
+
+<main>
+  <div class="offline-aviso" id="offline-aviso">
+    📡 Sem conexão no momento — sua denúncia será enviada automaticamente assim que o sinal voltar.
+  </div>
+
+  <form id="form-denuncia">
+    <div class="card">
+      <label>Tipo de incidente</label>
+      <div class="chips" id="chips-tipo">
+        <div class="chip" data-valor="assedio">Assédio</div>
+        <div class="chip" data-valor="importunacao">Importunação</div>
+        <div class="chip" data-valor="perseguicao">Perseguição</div>
+        <div class="chip" data-valor="outro">Outro</div>
+      </div>
+
+      <label>Onde aconteceu (setor)</label>
+      <select id="select-setor"><option value="">Selecione…</option></select>
+
+      <label>O que aconteceu?</label>
+      <textarea id="descricao" placeholder="Descreva com o máximo de detalhes que conseguir: aparência, roupas, horário aproximado…"></textarea>
+
+      <label>Nível de urgência</label>
+      <div class="urgencia-row" id="chips-urgencia">
+        <div class="urgencia-btn" data-valor="1">🔴 Crítico</div>
+        <div class="urgencia-btn" data-valor="3">🟡 Moderado</div>
+        <div class="urgencia-btn" data-valor="5">🟢 Registro</div>
+      </div>
+
+      <label>Foto como evidência (opcional)</label>
+      <input type="file" id="input-foto" accept="image/jpeg,image/png,image/webp" capture="environment">
+      <div class="preview-anexos" id="preview-anexos"></div>
+    </div>
+
+    <div class="card">
+      <label>Como você quer enviar?</label>
+      <div class="toggle-anonimo" id="toggle-anonimo">
+        <div class="chip selecionado" data-valor="anonimo">🕶️ Anônimo</div>
+        <div class="chip" data-valor="identificado">🙋 Identificado</div>
+      </div>
+      <div id="campo-contato" style="display:none;">
+        <label>Seu contato (só a equipe de segurança vê, criptografado)</label>
+        <input type="text" id="contato" placeholder="Telefone ou nome da credencial">
+      </div>
+      <div class="aviso-privacidade">
+        🔒 Seus dados não ficam vinculados à sua identidade real no envio anônimo.
+        Não coletamos localização exata sem sua ação — só o setor selecionado.
+        Fotos têm os metadados (GPS, modelo do aparelho) removidos automaticamente.
+      </div>
+    </div>
+
+    <button type="submit" class="btn-enviar" id="btn-enviar">Enviar denúncia</button>
+    <div class="campo-erro" id="campo-erro"></div>
+  </form>
+
+  <div class="resultado" id="resultado">
+    <div class="ok-icone">✅</div>
+    <p>Recebemos sua denúncia. Guarde este protocolo para acompanhar:</p>
+    <div class="protocolo" id="protocolo-gerado">OC-0000-0000</div>
+    <p style="font-size:0.85rem;color:#666;">A equipe de segurança já foi notificada.</p>
+    <button class="btn-enviar" id="btn-nova" type="button" style="margin-top:20px;">Fazer nova denúncia</button>
+  </div>
+</main>
+
+<script src="/denuncia.js" defer></script>
+</body>
+</html>

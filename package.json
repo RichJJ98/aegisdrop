@@ -1,0 +1,17 @@
+{
+  "name": "app-denuncias-mvp",
+  "version": "1.0.0",
+  "description": "Canal anônimo de denúncias e gestão de incidentes para eventos de grande porte",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --experimental-sqlite server.js",
+    "verify-audit": "node --experimental-sqlite audit-verify.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "sharp": "^0.34.5",
+    "pdf-lib": "^1.17.1"
+  }
+}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central de Segurança — Painel Operacional</title>
+<style>
+  :root {
+    --roxo: #5b3ea6; --vermelho: #d92626; --amarelo: #d99a00; --verde: #1f8a4c;
+    --fundo: #14121c; --card: #1f1c2b; --texto: #eae8f2; --borda: #322c47;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--fundo); color: var(--texto); }
+  header { background: var(--card); padding: 16px 24px; border-bottom: 1px solid var(--borda); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  header h1 { margin: 0; font-size: 1.15rem; }
+  .status-conexao { font-size: 0.8rem; padding: 5px 10px; border-radius: 999px; }
+  .status-conexao.on { background: rgba(31,138,76,0.2); color: var(--verde); }
+  .status-conexao.off { background: rgba(217,38,38,0.2); color: var(--vermelho); }
+
+  .filtros { display: flex; gap: 8px; padding: 14px 24px; flex-wrap: wrap; background: #17141f; border-bottom: 1px solid var(--borda); }
+  .filtro-btn { padding: 7px 14px; border-radius: 999px; border: 1px solid var(--borda); background: transparent; color: var(--texto); font-size: 0.8rem; cursor: pointer; }
+  .filtro-btn.ativo { background: var(--roxo); border-color: var(--roxo); }
+
+  main { padding: 20px 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+
+  .ocorrencia-card { background: var(--card); border: 1px solid var(--borda); border-radius: 14px; padding: 16px; border-left: 5px solid var(--borda); animation: entrar 0.3s ease; }
+  .ocorrencia-card.urgencia-1 { border-left-color: var(--vermelho); }
+  .ocorrencia-card.urgencia-3 { border-left-color: var(--amarelo); }
+  .ocorrencia-card.urgencia-5 { border-left-color: var(--verde); }
+  @keyframes entrar { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0);} }
+
+  .card-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+  .protocolo { font-family: monospace; font-size: 0.85rem; color: #a99fd1; }
+  .badge-status { font-size: 0.7rem; padding: 3px 10px; border-radius: 999px; background: #322c47; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .tipo { font-weight: 700; font-size: 1rem; margin: 4px 0; text-transform: capitalize; }
+  .setor { font-size: 0.85rem; color: #b7b1cf; margin-bottom: 8px; }
+  .descricao { font-size: 0.85rem; line-height: 1.4; color: #d8d5e6; background: #14121c; padding: 10px; border-radius: 10px; margin-bottom: 10px; max-height: 80px; overflow-y: auto; }
+
+  .card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .action-btn { flex: 1; padding: 8px; font-size: 0.75rem; border-radius: 8px; border: 1px solid var(--borda); background: #262032; color: var(--texto); cursor: pointer; }
+  .action-btn:hover { background: var(--roxo); }
+  .action-btn.encerrar { background: var(--verde); border-color: var(--verde); }
+
+  .meta { font-size: 0.7rem; color: #7d7796; margin-top: 8px; }
+
+  .vazio { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #7d7796; }
+
+  .login { position: fixed; inset: 0; background: rgba(10,8,16,0.92); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+  .login[hidden] { display: none; }
+  .login-box { background: var(--card); border: 1px solid var(--borda); border-radius: 14px; padding: 24px; width: 100%; max-width: 360px; }
+  .login-box h2 { margin: 0 0 6px; font-size: 1.1rem; }
+  .login-box p { margin: 0 0 14px; font-size: 0.85rem; color: #b7b1cf; }
+  .login-box input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--borda); background: #14121c; color: var(--texto); font-size: 0.95rem; }
+  .login-box button { width: 100%; margin-top: 12px; padding: 12px; border: none; border-radius: 10px; background: var(--roxo); color: #fff; font-weight: 700; cursor: pointer; }
+  .login-box button:disabled { opacity: 0.6; }
+  .login-erro { margin-top: 10px; font-size: 0.8rem; color: #ff7b7b; }
+  .login-erro[hidden] { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛡️ Central de Segurança — Triagem em Tempo Real</h1>
+  <span class="status-conexao off" id="status-conexao">conectando…</span>
+</header>
+
+<div class="filtros" id="filtros">
+  <button class="filtro-btn ativo" data-status="">Todas</button>
+  <button class="filtro-btn" data-status="recebido">Recebidas</button>
+  <button class="filtro-btn" data-status="triagem">Em triagem</button>
+  <button class="filtro-btn" data-status="despachado">Despachadas</button>
+  <button class="filtro-btn" data-status="em_atendimento">Em atendimento</button>
+  <button class="filtro-btn" data-status="encerrado">Encerradas</button>
+</div>
+
+<main id="lista-ocorrencias">
+  <div class="vazio">Carregando ocorrências…</div>
+</main>
+
+<div class="login" id="login" hidden>
+  <form class="login-box" id="form-login" autocomplete="off">
+    <h2>🔐 Acesso da Central</h2>
+    <p>Informe o token do operador para ver as ocorrências.</p>
+    <input type="password" id="input-token" autocomplete="off" spellcheck="false" aria-label="Token do operador" required>
+    <div class="login-erro" id="login-erro" role="alert" hidden></div>
+    <button type="submit" id="btn-login">Entrar</button>
+  </form>
+</div>
+
+<script src="/central.js" defer></script>
+</body>
+</html>
